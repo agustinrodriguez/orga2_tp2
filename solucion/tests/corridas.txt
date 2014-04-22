@@ -1,0 +1,5 @@
+tiles 100 50 45 87
+popart
+temperature
+ldr 255
+ldr -- -100
