@@ -29,18 +29,15 @@ void tiles_c    (
 			rgb_t *p_s = (rgb_t*)&src_matrix[i_s][j_s*3];
 			*p_d = *p_s;
 
-			//printf("\nx: %d; y: %d", cont_x, cont_y);
 			if(j_s == cols)
 			{
 				j_s = offsety;
-			//	cont_x--;
 			}
 			if(i_s == filas)
 			{
 				i_s = offsetx;
 				cont_y--;
 				cont_x--;
-								
 			}
 			if (cont_y == 0 && cont_x == 0)
 			{
