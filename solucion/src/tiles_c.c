@@ -19,18 +19,6 @@ void tiles_c    (
 	int cont_x = 0;
 	int cont_y = 0;
 
-	/*for (int i_d = 0, i_s = 0; i_d < filas; i_d++, i_s++) {
-		for (int j_d = 0, j_s = 0; j_d < cols; j_d++, j_s++) {
-			rgb_t *p_d = (rgb_t*)&dst_matrix[i_d][j_d*3];
-			rgb_t *p_s = (rgb_t*)&src_matrix[i_s][j_s*3];
-			*p_d = *p_s;
-		}
-	}
-
-	printf("Ancho a copiar (x) %d", tamx);
-	printf("\nAlto a copiar (y) %d", tamy);
-	printf("\nAncho que se saltea (x) %d", offsetx);
-	printf("\nAlto que se saltea (y) %d", offsety);*/
 	cont_x = cols/tamx;
 	cont_y = filas/tamy;
 
@@ -59,8 +47,7 @@ void tiles_c    (
 				j_s = tamx;
 				i_s = tamy;
 			}
-		
-	}
+		}
 
 }
 
