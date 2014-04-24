@@ -29,23 +29,19 @@ void tiles_c    (
 			rgb_t *p_s = (rgb_t*)&src_matrix[i_s][j_s*3];
 			*p_d = *p_s;
 
-			if(j_s == cols)
-			{
+			if (j_s == cols) {
 				j_s = offsety;
 			}
-			if(i_s == filas)
-			{
+			if (i_s == filas) {
 				i_s = offsetx;
 				cont_y--;
 				cont_x--;
 			}
-			if (cont_y == 0 && cont_x == 0)
-			{
+			if (cont_y == 0 && cont_x == 0) {
 				j_s = tamx;
 				i_s = tamy;
 			}
 		}
-
-}
+	}
 
 }
