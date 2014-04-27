@@ -55,20 +55,12 @@ void ldr_c    (
                             sumab = sumab + s_s->b;
                         }
                     }
-                    srcsuma = p_s->r + p_s->b + p_s->g;
                     sumargb = sumar + sumab + sumag;
                     multiplico = sumargb*srcsuma*alfa;
                     var= (double)multiplico/max;
-                    //double prueba = MAX(( p_s->r + var),0);
                     p_d->r= MIN(MAX(( p_s->r + var),0),255);
                     p_d->b= MIN(MAX(( p_s->b + var),0),255);
                     p_d->g= MIN(MAX(( p_s->g + var),0),255);
-                   // *p_d = *p_s;
-
-/*
-                    p_d->r = MIN(MAX( p_s->r + ((p_s->r * sumColores) / max), 0), 255);
-                    p_d->g = MIN(MAX( p_s->g + ((p_s->g * sumColores) / max), 0), 255);
-                    p_d->b = MIN(MAX( p_s->b + ((p_s->b * sumColores) / max), 0), 255);*/
             }
         }
     }
