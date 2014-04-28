@@ -2,6 +2,10 @@ global popart_asm
 
 %define pixels_por_ciclo 15
 
+section .rodata align = 16
+	MASK_1_COLOR: DB 0x80, 0x00, 0x80, 0x03, 0x80, 0x60, 0x80, 0x90, 0x80, 0x0C, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80
+	UNO: DB 0x80, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80
+
 section .data
 
 section .text
@@ -36,7 +40,25 @@ popart_asm:
 	.ciclo:
 		cmp R10D, 0 ; si recorri todos los bytes
 		jle .fin
-		movdqu XMM0, [RDI]
+		movdqu XMM0, [RDI] ; xmm0(B) = | b | g | r | b | g | r | b | g | r | b | g | r | b | g | r | b |
+
+		movdqu XMM1, XMM0 ; XMM1 = XMM0
+		movdqu XMM2, XMM0 ; XMM2 = XMM0
+		movdqu XMM3, XMM0 ; XMM3 = XMM0
+
+		pshufb XMM0, [MASK_1_COLOR] ; XMM0(B) = | 0 | b | 0 | b | 0 | b | 0 | b | 0 | b | 0 | 0 | 0 | 0 | 0 | 0 |
+
+		movdqu XMM15, [MASK_1_COLOR]
+		paddb XMM15, [UNO] ; configuro la mascara para que me queden los indices en el siguiente color
+		pshufb XMM1, XMM15 ; XMM1(B) = | 0 | g | 0 | g | 0 | g | 0 | g | 0 | g | 0 | 0 | 0 | 0 | 0 | 0 |
+
+		paddb XMM15, [UNO] ; configuro la mascara para que me queden los indices en el siguiente color
+		pshufb XMM2, XMM15 ; XMM2 = | 0 | r | 0 | r | 0 | r | 0 | r | 0 | r | 0 | 0 | 0 | 0 | 0 | 0 |
+
+		; sumos los words
+		paddw XMM0, XMM1 ; XMM0 = | b + g | b + g | b + g | b + g | b + g | 0 | 0 | 0 |
+		paddw XMM0, XMM2 ; XMM0 = | b + g + r | b + g + r | b + g + r | b + g + r | b + g + r | 0 | 0 | 0 |
+
 
 		movdqu [RSI], XMM0
 
