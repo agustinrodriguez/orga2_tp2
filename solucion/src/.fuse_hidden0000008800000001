@@ -16,7 +16,7 @@ section .rodata align = 16
 	MASK_5: DB 0x00,0xFF,0xFF,0x00,0xFF,0xFF,0x00,0xFF,0xFF,0x00,0xFF,0xFF,0x00,0xFF,0xFF,0x00
 
 
-	MASK_DE1WORDA3BYTES: DB 0x00,0x00,0x00,0x02,0x02,0x02,0x04,0x04,0x04,0x06,0x06,0x06,0x08,0x08,0x08,0x80
+	MASK_DE1WORDA3BYTES: DB 0x00,0x01,0x01,0x02,0x03,0x03,0x04,0x05,0x05,0x06,0x07,0x07,0x00,0x00,0x00,0x00
 
 
 	MASK_152: DW 0x98,0x98,0x98,0x98,0x98,0x98,0x98,0x98
@@ -142,7 +142,6 @@ popart_asm:
 		
 	.elPrimero:
 		movdqu XMM13,[MASK_1]
-		pshufb XMM15, [MASK_DE1WORDA3BYTES]
 		pand xmm13, xmm14
 		pcmpeqw XMM14,XMM14
 		pxor xmm15, xmm14
@@ -152,7 +151,6 @@ popart_asm:
 	
 	.elSegundo:
 		movdqu XMM13,[MASK_2]
-		pshufb XMM15, [MASK_DE1WORDA3BYTES]
 		pand xmm13, xmm15
 		pcmpeqw XMM14,XMM14
 		pxor xmm15, xmm14
@@ -172,7 +170,6 @@ popart_asm:
 
 	.elCuarto:
 		movdqu XMM13,[MASK_4]
-		pshufb XMM15, [MASK_DE1WORDA3BYTES]
 		pand xmm13, xmm15
 		pcmpeqw XMM14,XMM14
 		pxor xmm15, xmm14
@@ -182,7 +179,6 @@ popart_asm:
 
 	.elQuinto:
 		movdqu XMM13,[MASK_5]
-		pshufb XMM15, [MASK_DE1WORDA3BYTES]
 		pand xmm13, xmm15
 		pcmpeqw XMM14,XMM14
 		pxor xmm15, xmm14
