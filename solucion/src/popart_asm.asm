@@ -1,6 +1,6 @@
 global popart_asm
 
-%define pixels_por_ciclo 15
+%define pixels_por_ciclo 16
 
 section .rodata align = 16
 	MASK_1_COLOR: DB 0x00, 0x03, 0x06, 0x09, 0x0C, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80
@@ -60,42 +60,27 @@ popart_asm:
 
 		movdqu XMM1, XMM0 ; XMM1 = XMM0
 		movdqu xmm2,xmm0
-		;XORPD xmm7,xmm7
-		;punpcklbw xmm10, xmm7 ; xmm1 = 0ja7j : : : j0ja0
-		;punpckhbw xmm11, xmm7 ; xmm2 = 0ja15j : : : j0ja8
-
-
+		
 		pshufb XMM0, [MASK_1_COLOR] ; RED
 		movdqu xmm10, xmm0
-		movdqu xmm11, xmm0
 		XORPD xmm7,xmm7
 		punpcklbw xmm10, xmm7 ; xmm1 = 0ja7j : : : j0ja0
-		punpckhbw xmm11, xmm7 ; xmm2 = 0ja15j : : : j0ja8
 
 		pshufb XMM1, [MASK_1_COLORGREEN] ; GREEN
 		movdqu XMM12, xmm1
-		movdqu XMM13, xmm1
 		XORPD xmm7,xmm7
 		punpcklbw xmm12, xmm7 ; xmm1 = 0ja7j : : : j0ja0
-		punpckhbw xmm13, xmm7 ; xmm2 = 0ja15j : : : j0ja8
 
 		pshufb XMM2, [MASK_1_COLORBLUE] ; BLUE
 		movdqu XMM14, xmm2
-		movdqu XMM15, xmm2
 		XORPD xmm7,xmm7
 		punpcklbw xmm14, xmm7 ; xmm1 = 0ja7j : : : j0ja0
-		punpckhbw xmm15, xmm7 ; xmm2 = 0ja15j : : : j0ja8
+
 		
 		paddw xmm10,xmm12
 		paddw xmm10,xmm14
-
-		paddw xmm11, xmm13
-		paddw xmm11,xmm15
-
-		paddd xmm10,xmm11
-		movdqu xmm0,xmm10
+		movdqu xmm0, xmm10
 		
-
 		XORPD XMM1,XMM1
 		XORPD XMM2, XMM2
 		XORPD XMM3,XMM3
@@ -109,7 +94,7 @@ popart_asm:
 
 	.sigo:
 		ORPD XMM1,XMM2
-		ORPD XMM1, XMM3
+		ORPD XMM1,XMM3
 		ORPD XMM1,XMM4
 		ORPD XMM1,XMM5
 		movdqu xmm0, xmm1
@@ -118,7 +103,6 @@ popart_asm:
 		add RSI, pixels_por_ciclo
 		sub R10D, pixels_por_ciclo
 		jmp .ciclo
-
 
 	.chequeo: 
 		
@@ -154,38 +138,37 @@ popart_asm:
 	
 		
 	.elPrimero:
-		XORPD XMM13, XMM13
 		movdqu XMM13,[MASK_1]
-		andps xmm13, xmm14
-		ANDNPS xmm0,xmm14
+		pand xmm13, xmm14
+		pandn xmm0,xmm14
 		movdqu xmm1, xmm13
 		jmp .sigo
 	
 	.elSegundo:
 		movdqu XMM13,[MASK_2]
 		pand xmm13, xmm15
-		ANDNPS xmm0,xmm15
+		pandn xmm0,xmm15
 		movdqu xmm2, xmm13
 		jmp .sigoCon1
 
 	.elTercero:
 		movdqu XMM13,[MASK_3]
 		pand xmm13, xmm15
-		ANDNPS xmm0,xmm15
+		pandn xmm0,xmm15
 		movdqu xmm3, xmm13
 		jmp .sigoCon2
 
 	.elCuarto:
-		movdqu XMM11,[MASK_4]
+		movdqu XMM13,[MASK_4]
 		pand xmm13, xmm15
-		ANDNPS xmm0,xmm15
+		pandn xmm15,xmm0
 		movdqu xmm4, xmm13
 		jmp .sigoCon3
 
 	.elQuinto:
-		movdqu XMM12,[MASK_5]
+		movdqu XMM13,[MASK_5]
 		pand xmm13, xmm15
-		ANDNPS xmm0,xmm15
+		pandn xmm0,xmm15
 		movdqu xmm5, xmm13
 		jmp .sigoCon4
 
