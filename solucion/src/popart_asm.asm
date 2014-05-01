@@ -1,13 +1,13 @@
 global popart_asm
 
-%define pixels_por_ciclo 16
+%define pixels_por_ciclo 15
 
 section .rodata align = 16
 	MASK_1_COLOR: DB 0x00, 0x03, 0x06, 0x09, 0x0C, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80
 	MASK_1_COLORGREEN: DB 0x01, 0x04,0x07, 0x0A, 0x0D, 0x80, 0x80, 0x80, 0x80, 0x80,0x80,0x80,0x80,0x80,0x80,0x80
 	MASK_1_COLORBLUE: DB 0x02,0x05, 0x08, 0x0B, 0x0E, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80 , 0x80, 0x80, 0x80, 0x80, 0x80
 	;UNO: DB 0x80, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0x01, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80
-
+	MASK_FIN: DB 0x00,0x01,0x02,0x03,0x04,0x05,0x06,0x07,0x08,0x09,0x0A,0x0B,0x0C,0x0D,0x0E,0x00
 	;MASCARA PARA CASO 255
 	MASK_1: DB 0xFF,0x00,0x00,0xFF,0x00,0x00,0xFF,0x00,0x00,0xFF,0x00,0x00,0xFF,0x00,0x00,0x00
 	MASK_2: DB 0x7F,0x00,0x7F,0x7F,0x00,0x7F,0x7F,0x00,0x7F,0x7F,0x00,0x7F,0x7F,0x00,0x7F,0x00
@@ -19,7 +19,7 @@ section .rodata align = 16
 	MASK_DE1WORDA3BYTES: DB 0x00,0x00,0x00,0x02,0x02,0x02,0x04,0x04,0x04,0x06,0x06,0x06,0x08,0x08,0x08,0x80
 
 
-	MASK_152: DW 0x98,0x98,0x98,0x98,0x98,0x98,0x98,0x98
+	MASK_152: DW 0x98,0x98,0x98,0x98,0x98,0x80,0x80,0x80
 	MASK_305: DW 0x131,0x131,0x131,0x131,0x131,0x131,0x131,0x131
 	MASK_459: DW 0x1CB,0x1CB,0x1CB,0x1CB,0x1CB,0x1CB,0x1CB,0x1CB
 	MASK_611: DW 0x263,0x263,0x263,0x263,0x263,0x263,0x263,0x263
@@ -68,7 +68,7 @@ popart_asm:
 		movdqu xmm10, xmm0
 		XORPD xmm7,xmm7
 		punpcklbw xmm10, xmm7 ; xmm1 = 0ja7j : : : j0ja0
-
+		
 		pshufb XMM1, [MASK_1_COLORGREEN] ; GREEN
 		movdqu XMM12, xmm1
 		XORPD xmm7,xmm7
@@ -89,6 +89,7 @@ popart_asm:
 		XORPD XMM3,XMM3
 		XORPD XMM4,XMM4
 		XORPD XMM5,XMM5
+		XORPD xmm10, xmm10
 
 		XORPD XMM14,XMM14
 		movdqu xmm15, XMM0 ; lo salvo 
@@ -96,11 +97,12 @@ popart_asm:
 		jge .chequeo
 
 	.sigo:
-		ORPD XMM1,XMM2
-		ORPD XMM1,XMM3
-		ORPD XMM1,XMM4
-		ORPD XMM1,XMM5
+		por XMM1,XMM2
+		por XMM1,XMM3
+		por XMM1,XMM4
+		por XMM1,XMM5
 		movdqu xmm0, xmm1
+		;pshufb xmm0, [MASK_FIN] no se si hay q guardarlo al reves o no
 		movdqu [RSI], XMM0
 		add RDI, pixels_por_ciclo
 		add RSI, pixels_por_ciclo
@@ -130,22 +132,27 @@ popart_asm:
 		.sigoCon2:
 			movdqu XMM14,[MASK_152]
 			movdqu xmm15,xmm0
-			pcmpgtw XMM15, XMM14 ; COMPARO PACK A PACK SI ES MAYOR O IGUAL A 152
+			pcmpgtw XMM15, XMM14 ; COMPARO PACK A PACK SI ES MAYOR A 152
 			jmp .elSegundo
 
 		.sigoCon1:
 			movdqa XMM14,[MASK_152]
+			movdqu XMM6, XMM10 ; me quedo con xmm10 y laburo con el de xmm6
+			pcmpeqw XMM7,XMM7
+			pxor xmm6, xmm7
+			pand xmm14,xmm6
 			movdqu xmm15,XMM0
-			pcmpgtw XMM14, XMM15 ; COMPARO PACK A PACK SI ES MENOR O IGUAL A 152
+			pcmpgtw XMM14, XMM15 ; COMPARO PACK A PACK SI ES MENOR A 152
 			jmp .elPrimero
 	
 		
 	.elPrimero:
 		movdqu XMM13,[MASK_1]
-		pshufb XMM15, [MASK_DE1WORDA3BYTES]
+		pshufb XMM14, [MASK_DE1WORDA3BYTES]
 		pand xmm13, xmm14
-		pcmpeqw XMM14,XMM14
-		pxor xmm15, xmm14
+		PADDUSW XMM10, XMM14  ;este lo uso para poner en 1 los pack que ya tuvieron su caso
+		pcmpeqw XMM15,XMM15
+		pxor xmm14, xmm15
 		pand xmm0,xmm14
 		movdqu xmm1, xmm13
 		jmp .sigo
@@ -154,6 +161,7 @@ popart_asm:
 		movdqu XMM13,[MASK_2]
 		pshufb XMM15, [MASK_DE1WORDA3BYTES]
 		pand xmm13, xmm15
+		PADDUSW XMM10, XMM15 ;este lo uso para poner en 1 los pack que ya tuvieron su caso
 		pcmpeqw XMM14,XMM14
 		pxor xmm15, xmm14
 		pand xmm0,xmm15
@@ -164,7 +172,8 @@ popart_asm:
 		movdqu XMM13,[MASK_3]
 		pshufb XMM15, [MASK_DE1WORDA3BYTES]
 		pand xmm13, xmm15
-		pcmpeqw XMM14,XMM14
+		PADDUSW XMM10, XMM15 ;este lo uso para poner en 1 los pack que ya tuvieron su caso
+		pcmpeqw XMM14,XMM14 
 		pxor xmm15, xmm14
 		pand xmm0,xmm15
 		movdqu xmm3, xmm13
@@ -174,6 +183,7 @@ popart_asm:
 		movdqu XMM13,[MASK_4]
 		pshufb XMM15, [MASK_DE1WORDA3BYTES]
 		pand xmm13, xmm15
+		PADDUSW XMM10, XMM15 ;este lo uso para poner en 1 los pack que ya tuvieron su caso
 		pcmpeqw XMM14,XMM14
 		pxor xmm15, xmm14
 		pand xmm0,xmm15
@@ -184,6 +194,7 @@ popart_asm:
 		movdqu XMM13,[MASK_5]
 		pshufb XMM15, [MASK_DE1WORDA3BYTES]
 		pand xmm13, xmm15
+		PADDUSW XMM10, XMM15 ;este lo uso para poner en 1 los pack que ya tuvieron su caso
 		pcmpeqw XMM14,XMM14
 		pxor xmm15, xmm14
 		pand xmm0,xmm15
