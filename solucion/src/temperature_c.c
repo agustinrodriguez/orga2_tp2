@@ -48,7 +48,7 @@ void temperature_c    (
 				p_d->b = 0;
 			}
 			if (between(divido,224,255)){
-				p_d->r = 255-(divido-224);
+				p_d->r = 255-(divido-224)*4;
 				p_d->g =0;
 				p_d->b = 0;
 			}

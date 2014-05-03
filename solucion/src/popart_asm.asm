@@ -147,56 +147,62 @@ popart_asm:
 		
 	.elPrimero:
 		movdqu XMM13,[MASK_1]
-		pshufb XMM14, [MASK_DE1WORDA3BYTES]
-		pand xmm13, xmm14
+		movdqu xmm11, xmm14
 		PADDUSW XMM10, XMM14  ;este lo uso para poner en 1 los pack que ya tuvieron su caso
 		pcmpeqw XMM15,XMM15
-		pxor xmm14, xmm15
-		pand xmm0,xmm14
+		pxor xmm11, xmm15
+		pand xmm0,xmm11
+		pshufb XMM14, [MASK_DE1WORDA3BYTES]
+		pand xmm13, xmm14
 		movdqu xmm1, xmm13
 		jmp .sigo
 	
 	.elSegundo:
 		movdqu XMM13,[MASK_2]
-		pshufb XMM15, [MASK_DE1WORDA3BYTES]
-		pand xmm13, xmm15
+		movdqu xmm11, xmm15
 		PADDUSW XMM10, XMM15 ;este lo uso para poner en 1 los pack que ya tuvieron su caso
 		pcmpeqw XMM14,XMM14
-		pxor xmm15, xmm14
-		pand xmm0,xmm15
+		pxor xmm11, xmm14
+		pand xmm0,xmm11
+		pshufb XMM15, [MASK_DE1WORDA3BYTES]
+		pand xmm13, xmm15
 		movdqu xmm2, xmm13
 		jmp .sigoCon1
 
 	.elTercero:
 		movdqu XMM13,[MASK_3]
-		pshufb XMM15, [MASK_DE1WORDA3BYTES]
-		pand xmm13, xmm15
+		movdqu xmm11, xmm15
 		PADDUSW XMM10, XMM15 ;este lo uso para poner en 1 los pack que ya tuvieron su caso
 		pcmpeqw XMM14,XMM14 
-		pxor xmm15, xmm14
-		pand xmm0,xmm15
+		pxor xmm11, xmm14
+		pand xmm0,xmm11
+
+		pshufb XMM15, [MASK_DE1WORDA3BYTES]
+		pand xmm13, xmm15
 		movdqu xmm3, xmm13
 		jmp .sigoCon2
 
 	.elCuarto:
 		movdqu XMM13,[MASK_4]
-		pshufb XMM15, [MASK_DE1WORDA3BYTES]
-		pand xmm13, xmm15
+		movdqu xmm11, xmm15		
 		PADDUSW XMM10, XMM15 ;este lo uso para poner en 1 los pack que ya tuvieron su caso
 		pcmpeqw XMM14,XMM14
-		pxor xmm15, xmm14
-		pand xmm0,xmm15
+		pxor xmm11, xmm14
+		pand xmm0,xmm11
+		pshufb XMM15, [MASK_DE1WORDA3BYTES]
+		pand xmm13, xmm15
 		movdqu xmm4, xmm13
 		jmp .sigoCon3
 
 	.elQuinto:
 		movdqu XMM13,[MASK_5]
+		PADDUSW XMM10, XMM15 ;este lo uso para poner en 1 los pack que ya tuvieron su caso
+		movdqu xmm11, xmm15
+		pcmpeqw XMM14,XMM14
+		pxor xmm11, xmm14
+		pand xmm0,xmm11
 		pshufb XMM15, [MASK_DE1WORDA3BYTES]
 		pand xmm13, xmm15
-		PADDUSW XMM10, XMM15 ;este lo uso para poner en 1 los pack que ya tuvieron su caso
-		pcmpeqw XMM14,XMM14
-		pxor xmm15, xmm14
-		pand xmm0,xmm15
 		movdqu xmm5, xmm13
 		jmp .sigoCon4
 
