@@ -82,9 +82,102 @@ ldr_asm:
 			movdqu XMM5, [RDI + RAX - 6] ; +2
 
 			; ACA VA LO DE GUIDO
-			movdqu xmm6, xmm3 ; es el mismo solo q lo salvo para poder usar los colores de los pixel por separado en el final
 	
-			jmp .seguir
+			movdqu xmm6, xmm3 ; es el mismo solo q lo salvo para poder usar los colores de los pixel por separado en el final
+				
+		;sumo los colores de cada pixel
+
+				movdqu xmm0, xmm3
+				jmp .sumarColores
+			.sigo:
+				movdqu xmm3,xmm0
+				movdqu xmm0, xmm2
+				jmp .sumarColores
+			.sigo2:
+				movdqu xmm2,xmm0
+				movdqu xmm0, xmm1
+				jmp .sumarColores
+			.sigo3:
+				movdqu xmm1,xmm0
+				movdqu xmm0, xmm4
+				jmp .sumarColores
+			.sigo4:
+				movdqu xmm4,xmm0
+				movdqu xmm0, xmm2
+				jmp .sumarColores
+			.sigo5:
+				movdqu xmm2, xmm0
+
+		; sumo los pixeles
+				paddw xmm1, xmm2
+				paddw xmm3, xmm1
+				paddw xmm3, xmm4
+				paddw xmm3, XMM5
+				;convierto a dw y a float para division
+				movdqu xmm11, [MASK_MAX]
+				
+				movdqu xmm7, xmm3
+				movdqu xmm8, xmm3
+				XORPD xmm9, xmm9
+				punpcklwd xmm7, xmm9 ;parte baja
+				punpckhwd xmm8, xmm9 ;parte alta
+				cvtdq2ps xmm7, xmm7
+				cvtdq2ps xmm8, xmm8
+				cvtdq2ps xmm11,xmm11
+
+				divps xmm7,xmm11 
+				divps xmm8,xmm11
+
+				CVTPS2DQ xmm7,xmm7
+				CVTPS2DQ xmm8, xmm8
+				PACKUSDW xmm7, xmm8
+				movdqu xmm3, xmm7
+				; voy a multiplicar ahora por alfa
+				;convierto a float para multiplicar
+				movdqu xmm15, [RSP + 48]
+				SHUFPS xmm15,xmm15, 0h ;chequear si es 0h,4h o 8h para ver de q lado lo pone si alta o baja
+				;suponiendo que ya tengo el alfa
+				;chequear si queda en dword, segun especificacion de clase va a los cuatro pack de dword sino es convertirlo y listo
+				;yo no lo puedo chequear ya que en mi rsp+48 me da un numero q entra en qword recien
+				jmp .multiplicarXAlfa
+			.continuamos:
+				;en xmm6 me habia guardado los colores de cada pixel "actuales"
+				movdqu xmm0, xmm6
+				jmp	.multiplicoColoresConAlfaYSumaRGBSobreMax
+			.ahoraMaximosYminimos:
+				;tengo en xmm1 b b b b b
+				;tengo en xmm2 g g g g g
+				;tengo en xmm4 r r r r r
+				movdqu xmm3, xmm0
+				paddw xmm1, xmm3
+				paddw xmm2, xmm3
+				paddw xmm4, xmm3
+				movdqu xmm0, xmm1
+				xor r15, r15
+				jmp .chequeo
+			.verdes:
+				movdqu xmm1, xmm0
+				movdqu xmm0, xmm2
+				jmp .chequeo
+			.rojos:
+				movdqu xmm2, xmm0
+				movdqu xmm0, xmm4
+				jmp .chequeo
+			.juntoTodo:
+				movdqu xmm4, xmm0
+				pshufb xmm1, [MASKCOLORROJO]
+				pshufb xmm2, [MASKCOLORVERDE]
+				pshufb xmm1, [MASKCOLORAZUL]
+				paddb xmm1, xmm2
+				paddb xmm1, xmm4
+				movdqu xmm0, xmm1
+				pshufb xmm0, [MASK_FIN]
+				jmp .finCiclo
+
+
+			.finCiclo:
+				movdqu [RSI], XMM0   ;esto no se si va aca o si le agregas algo y en donde
+				jmp .seguir
 
 		.es_borde: ; copio la misma imagen
 			xor RAX, RAX
