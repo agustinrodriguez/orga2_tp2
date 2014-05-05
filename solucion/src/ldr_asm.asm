@@ -86,7 +86,7 @@ ldr_asm:
 			movdqu xmm6, xmm3 ; es el mismo solo q lo salvo para poder usar los colores de los pixel por separado en el final
 				
 		;sumo los colores de cada pixel
-
+				xor R15,R15
 				movdqu xmm0, xmm3
 				jmp .sumarColores
 			.sigo:
@@ -103,10 +103,10 @@ ldr_asm:
 				jmp .sumarColores
 			.sigo4:
 				movdqu xmm4,xmm0
-				movdqu xmm0, xmm2
+				movdqu xmm0, xmm5
 				jmp .sumarColores
 			.sigo5:
-				movdqu xmm2, xmm0
+				movdqu xmm5, xmm0
 
 		; sumo los pixeles
 				paddw xmm1, xmm2
@@ -114,6 +114,7 @@ ldr_asm:
 				paddw xmm3, xmm4
 				paddw xmm3, XMM5
 				;convierto a dw y a float para division
+				;vamos a tener q cambiar de float a double porq como el numero es gigantesco pone cero de una
 				movdqu xmm11, [MASK_MAX]
 				
 				movdqu xmm7, xmm3
@@ -200,22 +201,22 @@ ldr_asm:
 		jmp .recorrido_fila
 
 	.sumarColores:
-		movdqu XMM1, XMM0 ; XMM1 = XMM0
-		movdqu XMM2, XMM0 ; XMM2 = XMM0
+		movdqu XMM7, XMM0 ; XMM1 = XMM0
+		movdqu XMM8, XMM0 ; XMM2 = XMM0
 		
-		XORPD XMM7, XMM7 ; XMM7 = 0
+		XORPD XMM9, XMM9 ; XMM7 = 0
 
 		pshufb XMM0, [MASK_1_COLOR] ; BLUE XMM0 = |b0|b1|b2|b3|b4|0|0|0|0|0|0|0|0|0|0|0|
 		movdqu XMM10, XMM0
-		punpcklbw XMM10, XMM7 ; XMM10 = |0 b0|0 b1|0 b2|0 b3|0 b4|
+		punpcklbw XMM10, XMM9 ; XMM10 = |0 b0|0 b1|0 b2|0 b3|0 b4|
 		
-		pshufb XMM1, [MASK_1_COLORGREEN] ; GREEN XMM1 = |g0|g1|g2|g3|g4|0|0|0|0|0|0|0|0|0|0|0|
-		movdqu XMM12, XMM1
-		punpcklbw XMM12, XMM7 ; XMM12 = |0 g0|0 g1|0 g2|0 g3|0 g4|
+		pshufb XMM7, [MASK_1_COLORGREEN] ; GREEN XMM1 = |g0|g1|g2|g3|g4|0|0|0|0|0|0|0|0|0|0|0|
+		movdqu XMM12, XMM7
+		punpcklbw XMM12, XMM9 ; XMM12 = |0 g0|0 g1|0 g2|0 g3|0 g4|
 
-		pshufb XMM2, [MASK_1_COLORBLUE] ; RED XMM2 = |b0|b1|b2|b3|b4|0|0|0|0|0|0|0|0|0|0|0|
-		movdqu XMM14, XMM2
-		punpcklbw XMM14, XMM7 ; XMM14 = |0 r0|0 r1|0 r2|0 r3|0 r4|
+		pshufb XMM8, [MASK_1_COLORBLUE] ; RED XMM2 = |b0|b1|b2|b3|b4|0|0|0|0|0|0|0|0|0|0|0|
+		movdqu XMM14, XMM8
+		punpcklbw XMM14, XMM9 ; XMM14 = |0 r0|0 r1|0 r2|0 r3|0 r4|
 	
 		paddw XMM10, XMM12
 		paddw XMM10, XMM14
