@@ -69,10 +69,10 @@ ldr_asm:
 			mov EAX, EBX
 			add EAX, R14D
 
-			sub EAX, R8D ; RAX = RAX - R8D ; -2
+			sub EAX, R8D ; RAX = RAX - R8D ; -1
 			movdqu XMM2, [RDI + RAX - 6]
 			sub EAX, R8D ; RAX = RAX - R18D - R8D
-			movdqu XMM1, [RDI + RAX - 6] ; -1
+			movdqu XMM1, [RDI + RAX - 6] ; -2
 			add EAX, R8D 
 			add EAX, R8D ; RAX = RAX 
 			movdqu XMM3, [RDI + RAX - 6] ; pixels centrales
@@ -82,7 +82,8 @@ ldr_asm:
 			movdqu XMM5, [RDI + RAX - 6] ; +2
 
 			; ACA VA LO DE GUIDO
-
+			movdqu xmm6, xmm3 ; es el mismo solo q lo salvo para poder usar los colores de los pixel por separado en el final
+	
 			jmp .seguir
 
 		.es_borde: ; copio la misma imagen
