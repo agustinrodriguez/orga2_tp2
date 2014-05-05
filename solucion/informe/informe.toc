@@ -1,0 +1,8 @@
+\contentsline {section}{\numberline {1}Introducci\IeC {\'o}n}{3}
+\contentsline {section}{\numberline {2}Desarrollo y Resultados}{4}
+\contentsline {subsection}{\numberline {2.1}Filtro Tiles}{4}
+\contentsline {subsection}{\numberline {2.2}Filtro Tiles}{5}
+\contentsline {subsection}{\numberline {2.3}Filtro Popart}{6}
+\contentsline {subsection}{\numberline {2.4}Filtro Temperature}{7}
+\contentsline {subsection}{\numberline {2.5}Filtro LDR}{8}
+\contentsline {section}{\numberline {3}Conclusi\IeC {\'o}n}{9}

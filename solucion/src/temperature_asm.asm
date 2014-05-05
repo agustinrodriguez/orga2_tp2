@@ -180,7 +180,6 @@ push RBP
 	.elPrimero:
 		movdqu xmm12, xmm15
 		;convirto a float para poder multiplicar por 4
-		pand xmm12, xmm14
 		movdqu xmm11, [M4]
 		movdqu xmm7, xmm12
 		movdqu xmm8, xmm12
@@ -199,35 +198,21 @@ push RBP
 		PACKUSDW xmm7, xmm8
 		movdqu xmm12, xmm7
 		;una vez multiplicado paso valor a xmm2 para seguir trabajando
-
+	
 		movdqu XMM13, [M128]
-		pand xmm13, xmm14  ;para no tener errores ni defajes en las operaciones anulo los packs q no cumplieron la guarda
+		pand xmm13, xmm6  ;para no tener errores ni defajes en las operaciones anulo los packs q no cumplieron la guarda
 		paddb XMM13, xmm12
 		pshufb xmm13, [MASK_1]  ;obtengo los valores rgb del caso 1 en cada pack [0|0|X]
 		
-
-		movdqu xmm6,xmm10 ; copio para que los casos q estan en 0 no me los vuelva a contar y mal
-		pcmpeqw XMM15,XMM15
-		pxor xmm6, xmm15
-		pand xmm13,xmm6
-
-
 		PADDUSW XMM10, XMM14  ;este lo uso para poner en 1 los pack que ya tuvieron su caso
-		movdqu xmm11, xmm14    ;ahora voy a invertir el registro con los casos positivos y negativos para asi sacarlos de xmm0
-		pcmpeqw XMM15,XMM15
-		pxor xmm11, xmm15
-		pand xmm0,xmm11
 		pshufb XMM14, [MASK_DE1WORDA3BYTES]
-		pand xmm13, xmm14
 		movdqu xmm1, xmm13
 		jmp .sigo
 	
 	.elSegundo:
 		movdqu xmm13, xmm0
 		movdqu xmm11, [M32]
-		pand xmm11,xmm15
 		psubb XMM13, xmm11
-		pand xmm13, xmm15
 		;convierto a float para multiplicar
 		movdqu xmm11, [M4]
 		movdqu xmm7, xmm13
@@ -247,9 +232,9 @@ push RBP
 		PACKUSDW xmm7, xmm8
 		movdqu xmm13, xmm7
 		;ya multipliocado vuelvo el valor a xmm13 y continuo
-
-		XORPD xmm11, xmm11
+		
 		movdqu xmm11, [MASK_2]  ;0 0 255
+		
 		pshufb xmm13, [MASK_2_2] ; 0 x 0
 		paddb XMM13, XMM11
 
@@ -267,7 +252,7 @@ push RBP
 	.elTercero:
 		movdqu xmm13, xmm0
 		movdqu xmm11, [M96]
-		pand xmm11,xmm15
+	
 		psubb XMM13, XMM11
 		pand xmm13, xmm15
 		;convierto a float para multiplicar
@@ -289,7 +274,7 @@ push RBP
 		PACKUSDW xmm7, xmm8
 		movdqu xmm13, xmm7
 		;ya multipliocado vuelvo el valor a xmm13 y continuo
-
+		
 		pshufb xmm13, [MASK_3]  ;obtengo los valores rgb del caso 1 en cada pack
 		movdqu xmm11, [MASK_CON255] ; PARA CASO 3 0 255 255
 		psubb xmm11, xmm13
@@ -302,6 +287,7 @@ push RBP
 		pcmpeqw XMM14,XMM14
 		pxor xmm11, xmm14
 		pand xmm0,xmm11
+
 		pshufb XMM15, [MASK_DE1WORDA3BYTES]
 		pand xmm13, xmm15
 		movdqu xmm3, xmm13
@@ -310,7 +296,7 @@ push RBP
 	.elCuarto:
 		movdqu xmm13, xmm0
 		movdqu xmm11, [M160]
-		pand xmm11,xmm15
+	
 		psubb XMM13, xmm11
 		pand xmm13, xmm15
 		;convierto a float para multiplicar
@@ -353,7 +339,7 @@ push RBP
 	.elQuinto:
 		movdqu xmm13, xmm0
 		movdqu xmm11, [M224]
-		pand xmm11,xmm15
+		
 		psubb XMM13, xmm11
 		pand xmm13, xmm15
 			;convierto a float para multiplicar
@@ -387,6 +373,7 @@ push RBP
 		pcmpeqw XMM14,XMM14
 		pxor xmm11, xmm14
 		pand xmm0,xmm11
+		
 		pshufb XMM15, [MASK_DE1WORDA3BYTES]
 		pand xmm13, xmm15
 		movdqu xmm5, xmm13
