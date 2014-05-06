@@ -42,7 +42,7 @@ ldr_asm:
 	push R13
 	push R14
 
-	; mov EBX, [RSP + 48] ; EBX = alfa
+	; [RSP + 48] = alfa
 
 	mov R12D, 0 ; R12D = 0 contador de filas
 	mov R13D, 0 ; R13D = 0 contador de columnas
@@ -232,11 +232,13 @@ ldr_asm:
 				paddb xmm8, xmm10
 				movdqu xmm0, xmm8
 				pshufb xmm0, [MASK_FIN]
-				jmp .finCiclo
+				
 
-
-			.finCiclo:
-				movdqu [RSI], XMM0   ;esto no se si va aca o si le agregas algo y en donde
+				; FINALMENTE COLOCO EN LA IMAGEN DESTINO EL RESULTADO
+				xor RAX, RAX
+				mov EAX, EBX
+				add EAX, R14D
+				movdqu [RSI + RAX], XMM0 ; pixels centrales
 				jmp .seguir
 
 		.es_borde: ; copio la misma imagen
