@@ -13,14 +13,13 @@ section .rodata align = 16
 	MASKCOLORROJO: DB 0x00,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80
 	MASKCOLORVERDE: DB 0x01,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80
 	MASKCOLORAZUL: DB 0x02,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80
-	MALFA: DB 0x00,0x80,0x80,0x80,0x00,0x80,0x80,0x80,0x00,0x80,0x80,0x80,0x00,0x80,0x80,0x80
+	MALFA: DB 0x00,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80
 	MEQUEDOCONELDELMEDIO: DB 0x06,0x07,0x08,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80
 ;mascaras en DW
 	M255: DW 0xFF,0x00,0x00,0x00,0x00,0x00,0x00,0x00
 	M0: DW 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
 ;mascaras en DD
-	MASK_MAX: DD 0x4A6A4B, 0x4A6A4B, 0x4A6A4B, 0x4A6A4B
-	prueba: DW 0x00+0x01, 0x80,0x80,0x80,0x80,0x80,0x80,0x80
+	MASK_MAX: DD 0x4A6A4B, 0x01, 0x01, 0x01
 	
 	
 
@@ -208,10 +207,8 @@ ldr_asm:
 				pshufb xmm8, [MASKCOLORROJO] ;dice rojo pero seria el blue
 				paddw xmm8, xmm1
 				pshufb xmm9, [MASKCOLORVERDE]
-				;PSLLDQ xmm5, 1d
 				paddw xmm9, xmm5
 				pshufb xmm10, [MASKCOLORAZUL]
-				;PSLLDQ xmm7, 2d
 				paddw xmm10, xmm7
 
 				movdqu xmm0, xmm8
@@ -219,12 +216,10 @@ ldr_asm:
 				jmp .chequeo
 			.verdes:
 				movdqu xmm8, xmm0
-				;PSRLDQ xmm9, 1d
 				movdqu xmm0, xmm9
 				jmp .chequeo
 			.rojos:
 				movdqu xmm9, xmm0
-				;PSRLDQ xmm10, 2d
 				movdqu xmm0, xmm10
 				jmp .chequeo
 			.juntoTodo:
@@ -365,67 +360,66 @@ ldr_asm:
 				pcmpgtw XMM15, XMM14 ; COMPARO PACK A PACK SI ES MAYOR A 0
 				jmp .elNumeroEsMayorACero
 
-			.chequeoLosMenoresACero:
-				movdqu XMM14,[M0]
-				pand xmm14,xmm11
-				movdqu xmm15,xmm0
-				pcmpgtw XMM14,XMM15 ; COMPARO PACK A PACK SI ES menor A 0
-				jmp .elNumeroNoEsMayorACero
+			;.chequeoLosMenoresACero:
+			;	movdqu XMM14,[M0]
+			;	pand xmm14,xmm11
+			;	movdqu xmm15,xmm0
+			;	pcmpgtw XMM14,XMM15 ; COMPARO PACK A PACK SI ES menor A 0
+			;	jmp .elNumeroNoEsMayorACero
 
 			.chequeoLosMenoresA255:
-				xorps xmm0,xmm0
-				orps xmm0,xmm1
-				orps xmm0,xmm2
+				orpd xmm1,xmm2
+				movdqu xmm0, xmm1
 				movdqu XMM14,[M255]
 				movdqu xmm15,xmm0
 				pcmpgtw XMM14,XMM15 ; COMPARO PACK A PACK SI ES menor A 255
 				jmp .elNumeroEsMenorA255
 			
-			.chequeoLosMayoresA255:
-				movdqu XMM14,[M255]
-				movdqu xmm15,xmm0
-				pcmpgtw XMM15,XMM14 ; COMPARO PACK A PACK SI ES MAYOR A 255
-				jmp .elNumeroEsMayorA255
+			;.chequeoLosMayoresA255:
+			;	movdqu XMM14,[M255]
+			;	movdqu xmm15,xmm0
+			;	pcmpgtw XMM15,XMM14 ; COMPARO PACK A PACK SI ES MAYOR A 255
+			;	jmp .elNumeroEsMayorA255
 
 				.elNumeroEsMayorACero:
 					movdqu XMM13, xmm0
-				;	movdqu xmm11, xmm15  ;ahora voy a invertir el registro con los casos positivos y negativos para asi sacarlos de xmm0
-				;	pcmpeqw XMM14,XMM14 
-				;	pxor xmm11, xmm14
-				;	pand xmm0,xmm11
-					
+					movdqu xmm11, xmm15  ;ahora voy a invertir el registro con los casos positivos y negativos para asi sacarlos de xmm0
+					pcmpeqw XMM14,XMM14 
+					pxor xmm11, xmm14
+					movdqu xmm2, [M0]
+					pand xmm2,xmm11
 					pand xmm13, xmm15
 					movdqu xmm1, xmm13
-					jmp .chequeoLosMenoresACero
-
-				.elNumeroNoEsMayorACero:
-					movdqu XMM13, [M0]
-					pand xmm13, xmm14
-					movdqu xmm2, xmm13
 					jmp .chequeoLosMenoresA255
+
+				;.elNumeroNoEsMayorACero:
+				;	movdqu XMM13, [M0]
+				;	pand xmm13, xmm14
+				;	movdqu xmm2, xmm13
+				;	jmp .chequeoLosMenoresA255
 
 				.elNumeroEsMenorA255:
 					movdqu XMM13, xmm0
-				;	movdqu xmm11, xmm14  ;ahora voy a invertir el registro con los casos positivos y negativos para asi sacarlos de xmm0
-				;	pcmpeqw XMM15,XMM15 
-				;	pxor xmm11, xmm15
-				;	pand xmm0,xmm11
+					movdqu xmm11, xmm14  ;ahora voy a invertir el registro con los casos positivos y negativos para asi sacarlos de xmm0
+					pcmpeqw XMM15,XMM15 
+					pxor xmm11, xmm15
+					movdqu xmm4, [M255]
+					pand xmm4,xmm11
 					pand xmm13, xmm14
 					movdqu xmm3, xmm13
-					jmp .chequeoLosMayoresA255
-
-				.elNumeroEsMayorA255:
-					movdqu XMM13, [M255]
-					pand xmm13, xmm15
-					movdqu xmm4, xmm13
 					jmp .juntoDatosYVuelvo
+
+				;.elNumeroEsMayorA255:
+				;	movdqu XMM13, [M255]
+				;	pand xmm13, xmm15
+				;	movdqu xmm4, xmm13
+				;	jmp .juntoDatosYVuelvo
 
 
 					.juntoDatosYVuelvo:
 						add r15, 1
-						xorps xmm0,xmm0
-						orps xmm0,xmm3
-						orps xmm0,xmm4
+						orps xmm3,xmm4
+						movdqu xmm0,xmm3
 						cmp r15,1
 						je .verdes
 						cmp r15,2
