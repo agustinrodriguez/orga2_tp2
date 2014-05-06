@@ -11,8 +11,8 @@ section .rodata align = 16
 	MASKPARACASOSPOSITIVOS: DB 0x00,0x02,0x04,0x06,0x08,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80
 	MASK_FIN: DB 0x02,0x01,0x00,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80
 	MASKCOLORROJO: DB 0x00,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80
-	MASKCOLORVERDE: DB 0x80,0x01,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80
-	MASKCOLORAZUL: DB 0x80,0x80,0x02,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80
+	MASKCOLORVERDE: DB 0x01,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80
+	MASKCOLORAZUL: DB 0x02,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80
 	MALFA: DB 0x00,0x80,0x80,0x80,0x00,0x80,0x80,0x80,0x00,0x80,0x80,0x80,0x00,0x80,0x80,0x80
 	MEQUEDOCONELDELMEDIO: DB 0x06,0x07,0x08,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80
 ;mascaras en DW
@@ -208,10 +208,10 @@ ldr_asm:
 				pshufb xmm8, [MASKCOLORROJO] ;dice rojo pero seria el blue
 				paddw xmm8, xmm1
 				pshufb xmm9, [MASKCOLORVERDE]
-				PSLLDQ xmm5, 1d
+				;PSLLDQ xmm5, 1d
 				paddw xmm9, xmm5
 				pshufb xmm10, [MASKCOLORAZUL]
-				PSLLDQ xmm7, 2d
+				;PSLLDQ xmm7, 2d
 				paddw xmm10, xmm7
 
 				movdqu xmm0, xmm8
@@ -219,12 +219,12 @@ ldr_asm:
 				jmp .chequeo
 			.verdes:
 				movdqu xmm8, xmm0
-				PSRLDQ xmm9, 1d
+				;PSRLDQ xmm9, 1d
 				movdqu xmm0, xmm9
 				jmp .chequeo
 			.rojos:
 				movdqu xmm9, xmm0
-				PSRLDQ xmm10, 2d
+				;PSRLDQ xmm10, 2d
 				movdqu xmm0, xmm10
 				jmp .chequeo
 			.juntoTodo:
@@ -360,78 +360,78 @@ ldr_asm:
 
 
 			.chequeo:
-		movdqu XMM14,[M0]
-		movdqu xmm15,xmm0
-		pcmpgtw XMM15, XMM14 ; COMPARO PACK A PACK SI ES MAYOR A 0
-		jmp .elNumeroEsMayorACero
+				movdqu XMM14,[M0]
+				movdqu xmm15,xmm0
+				pcmpgtw XMM15, XMM14 ; COMPARO PACK A PACK SI ES MAYOR A 0
+				jmp .elNumeroEsMayorACero
 
-	.chequeoLosMenoresACero:
-		movdqu XMM14,[M0]
-		pand xmm14,xmm11
-		movdqu xmm15,xmm0
-		pcmpgtw XMM14,XMM15 ; COMPARO PACK A PACK SI ES menor A 0
-		jmp .elNumeroNoEsMayorACero
+			.chequeoLosMenoresACero:
+				movdqu XMM14,[M0]
+				pand xmm14,xmm11
+				movdqu xmm15,xmm0
+				pcmpgtw XMM14,XMM15 ; COMPARO PACK A PACK SI ES menor A 0
+				jmp .elNumeroNoEsMayorACero
 
-	.chequeoLosMenoresA255:
-		xorpd xmm0,xmm0
-		orpd xmm0,xmm1
-		orpd xmm0,xmm2
-		movdqu XMM14,[M255]
-		movdqu xmm15,xmm0
-		pcmpgtw XMM14,XMM15 ; COMPARO PACK A PACK SI ES menor A 255
-		jmp .elNumeroEsMenorA255
-	
-	.chequeoLosMayoresA255:
-		movdqu XMM14,[M255]
-		movdqu xmm15,xmm0
-		pcmpgtw XMM15,XMM14 ; COMPARO PACK A PACK SI ES MAYOR A 255
-		jmp .elNumeroEsMayorA255
-
-		.elNumeroEsMayorACero:
-			movdqu XMM13, xmm0
-			movdqu xmm11, xmm15  ;ahora voy a invertir el registro con los casos positivos y negativos para asi sacarlos de xmm0
-			pcmpeqw XMM14,XMM14 
-			pxor xmm11, xmm14
-			pand xmm0,xmm11
+			.chequeoLosMenoresA255:
+				xorps xmm0,xmm0
+				orps xmm0,xmm1
+				orps xmm0,xmm2
+				movdqu XMM14,[M255]
+				movdqu xmm15,xmm0
+				pcmpgtw XMM14,XMM15 ; COMPARO PACK A PACK SI ES menor A 255
+				jmp .elNumeroEsMenorA255
 			
-			pand xmm13, xmm15
-			movdqu xmm1, xmm13
-			jmp .chequeoLosMenoresACero
+			.chequeoLosMayoresA255:
+				movdqu XMM14,[M255]
+				movdqu xmm15,xmm0
+				pcmpgtw XMM15,XMM14 ; COMPARO PACK A PACK SI ES MAYOR A 255
+				jmp .elNumeroEsMayorA255
 
-		.elNumeroNoEsMayorACero:
-			movdqu XMM13, [M0]
-			pand xmm13, xmm14
-			movdqu xmm2, xmm13
-			jmp .chequeoLosMenoresA255
+				.elNumeroEsMayorACero:
+					movdqu XMM13, xmm0
+				;	movdqu xmm11, xmm15  ;ahora voy a invertir el registro con los casos positivos y negativos para asi sacarlos de xmm0
+				;	pcmpeqw XMM14,XMM14 
+				;	pxor xmm11, xmm14
+				;	pand xmm0,xmm11
+					
+					pand xmm13, xmm15
+					movdqu xmm1, xmm13
+					jmp .chequeoLosMenoresACero
 
-		.elNumeroEsMenorA255:
-			movdqu XMM13, xmm0
-			movdqu xmm11, xmm14  ;ahora voy a invertir el registro con los casos positivos y negativos para asi sacarlos de xmm0
-			pcmpeqw XMM15,XMM15 
-			pxor xmm11, xmm15
-			pand xmm0,xmm11
-			pand xmm13, xmm14
-			movdqu xmm3, xmm13
-			jmp .chequeoLosMayoresA255
+				.elNumeroNoEsMayorACero:
+					movdqu XMM13, [M0]
+					pand xmm13, xmm14
+					movdqu xmm2, xmm13
+					jmp .chequeoLosMenoresA255
 
-		.elNumeroEsMayorA255:
-			movdqu XMM13, [M255]
-			pand xmm13, xmm15
-			movdqu xmm4, xmm13
-			jmp .juntoDatosYVuelvo
+				.elNumeroEsMenorA255:
+					movdqu XMM13, xmm0
+				;	movdqu xmm11, xmm14  ;ahora voy a invertir el registro con los casos positivos y negativos para asi sacarlos de xmm0
+				;	pcmpeqw XMM15,XMM15 
+				;	pxor xmm11, xmm15
+				;	pand xmm0,xmm11
+					pand xmm13, xmm14
+					movdqu xmm3, xmm13
+					jmp .chequeoLosMayoresA255
+
+				.elNumeroEsMayorA255:
+					movdqu XMM13, [M255]
+					pand xmm13, xmm15
+					movdqu xmm4, xmm13
+					jmp .juntoDatosYVuelvo
 
 
-		.juntoDatosYVuelvo:
-			add r15, 1
-			xorpd xmm0,xmm0
-			orpd xmm0,xmm3
-			orpd xmm0,xmm4
-			cmp r15,1
-			je .verdes
-			cmp r15,2
-			je .rojos
-			cmp r15,3
-			je .juntoTodo
+					.juntoDatosYVuelvo:
+						add r15, 1
+						xorps xmm0,xmm0
+						orps xmm0,xmm3
+						orps xmm0,xmm4
+						cmp r15,1
+						je .verdes
+						cmp r15,2
+						je .rojos
+						cmp r15,3
+						je .juntoTodo
 
 
 	.fin:
