@@ -39,12 +39,12 @@ void ldr_c    (
 
                 sumargb = sumargb/max;
 
-                varr = (double) (p_s->r * alfa * sumargb);
-                varg = (double) (p_s->g * alfa * sumargb);
                 varb = (double) (p_s->b * alfa * sumargb);
+                varg = (double) (p_s->g * alfa * sumargb);
+                varr = (double) (p_s->r * alfa * sumargb);
 
-                p_d->b= MIN(MAX(( p_s->b + varg),0),255);
-                p_d->g= MIN(MAX(( p_s->g + varb),0),255);
+                p_d->b= MIN(MAX(( p_s->b + varb),0),255);
+                p_d->g= MIN(MAX(( p_s->g + varg),0),255);
                 p_d->r= MIN(MAX(( p_s->r + varr),0),255);
             }
         }
