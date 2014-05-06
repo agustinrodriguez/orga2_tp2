@@ -17,7 +17,6 @@ void ldr_c    (
 {
     unsigned char (*src_matrix)[src_row_size] = (unsigned char (*)[src_row_size]) src;
     unsigned char (*dst_matrix)[dst_row_size] = (unsigned char (*)[dst_row_size]) dst;
-    int sumar,sumag,sumab = 0;
     int max = 4876875; // 5*5*255*3*255;
     double sumargb = 0;
     double varr = 0;
@@ -47,8 +46,6 @@ void ldr_c    (
                 p_d->b= MIN(MAX(( p_s->b + varg),0),255);
                 p_d->g= MIN(MAX(( p_s->g + varb),0),255);
                 p_d->r= MIN(MAX(( p_s->r + varr),0),255);
-
-                int k = 0;
             }
         }
     }
