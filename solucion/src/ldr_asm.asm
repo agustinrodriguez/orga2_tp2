@@ -11,12 +11,12 @@ section .rodata align = 16
 	MASKPARACASOSPOSITIVOS: DB 0x00,0x02,0x04,0x06,0x08,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80
 	MASK_FIN: DB 0x02,0x01,0x00,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80
 	MASKCOLORROJO: DB 0x00,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80
-	MASKCOLORVERDE: DB 0x80,0x00,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80
-	MASKCOLORAZUL: DB 0x80,0x80,0x00,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80
+	MASKCOLORVERDE: DB 0x80,0x01,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80
+	MASKCOLORAZUL: DB 0x80,0x80,0x02,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80
 	MALFA: DB 0x00,0x80,0x80,0x80,0x00,0x80,0x80,0x80,0x00,0x80,0x80,0x80,0x00,0x80,0x80,0x80
 	MEQUEDOCONELDELMEDIO: DB 0x06,0x07,0x08,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80,0x80
 ;mascaras en DW
-	M255: DW 0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF
+	M255: DW 0xFF,0x00,0x00,0x00,0x00,0x00,0x00,0x00
 	M0: DW 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
 ;mascaras en DD
 	MASK_MAX: DD 0x4A6A4B, 0x4A6A4B, 0x4A6A4B, 0x4A6A4B
@@ -208,8 +208,10 @@ ldr_asm:
 				pshufb xmm8, [MASKCOLORROJO] ;dice rojo pero seria el blue
 				paddw xmm8, xmm1
 				pshufb xmm9, [MASKCOLORVERDE]
+				PSLLDQ xmm5, 1d
 				paddw xmm9, xmm5
 				pshufb xmm10, [MASKCOLORAZUL]
+				PSLLDQ xmm7, 2d
 				paddw xmm10, xmm7
 
 				movdqu xmm0, xmm8
@@ -217,22 +219,22 @@ ldr_asm:
 				jmp .chequeo
 			.verdes:
 				movdqu xmm8, xmm0
+				PSRLDQ xmm9, 1d
 				movdqu xmm0, xmm9
 				jmp .chequeo
 			.rojos:
 				movdqu xmm9, xmm0
+				PSRLDQ xmm10, 2d
 				movdqu xmm0, xmm10
 				jmp .chequeo
 			.juntoTodo:
 				movdqu xmm10, xmm0
-				pshufb xmm8, [MASKCOLORROJO]
-				pshufb xmm9, [MASKCOLORVERDE]
-				pshufb xmm10, [MASKCOLORAZUL]
+				PSLLDQ xmm9, 1d
+				PSLLDQ xmm10, 2d
 				paddb xmm8, xmm9
 				paddb xmm8, xmm10
 				movdqu xmm0, xmm8
-				pshufb xmm0, [MASK_FIN]
-				
+						
 
 				; FINALMENTE COLOCO EN LA IMAGEN DESTINO EL RESULTADO
 				xor RAX, RAX
@@ -354,9 +356,6 @@ ldr_asm:
 			cvtdq2ps xmm13, xmm13
 			mulps xmm13, xmm3
 			movdqu XMM7, XMM13
-			; paddd XMM10, XMM11
-			; paddd XMM10, XMM12
-			; movdqu XMM0, XMM10 ; XMM0 = |p_s->b * alfa * sumargb/max|p_s->g * alfa * sumargb/max|b2 + g2 + r2|b3 + g3 + r3|b4 + g4 + r4|
 			jmp .dividirPorMax
 
 
@@ -388,40 +387,35 @@ ldr_asm:
 		pcmpgtw XMM15,XMM14 ; COMPARO PACK A PACK SI ES MAYOR A 255
 		jmp .elNumeroEsMayorA255
 
-
-
 		.elNumeroEsMayorACero:
 			movdqu XMM13, xmm0
 			movdqu xmm11, xmm15  ;ahora voy a invertir el registro con los casos positivos y negativos para asi sacarlos de xmm0
 			pcmpeqw XMM14,XMM14 
 			pxor xmm11, xmm14
 			pand xmm0,xmm11
-			pshufb XMM15, [MASKPARACASOSPOSITIVOS]
+			
 			pand xmm13, xmm15
 			movdqu xmm1, xmm13
 			jmp .chequeoLosMenoresACero
 
 		.elNumeroNoEsMayorACero:
 			movdqu XMM13, [M0]
-			pshufb XMM15, [MASKPARACASOSPOSITIVOS]
-			pand xmm13, xmm15
+			pand xmm13, xmm14
 			movdqu xmm2, xmm13
 			jmp .chequeoLosMenoresA255
 
 		.elNumeroEsMenorA255:
 			movdqu XMM13, xmm0
-			movdqu xmm11, xmm15  ;ahora voy a invertir el registro con los casos positivos y negativos para asi sacarlos de xmm0
-			pcmpeqw XMM14,XMM14 
-			pxor xmm11, xmm14
+			movdqu xmm11, xmm14  ;ahora voy a invertir el registro con los casos positivos y negativos para asi sacarlos de xmm0
+			pcmpeqw XMM15,XMM15 
+			pxor xmm11, xmm15
 			pand xmm0,xmm11
-			pshufb XMM15, [MASKPARACASOSPOSITIVOS]
-			pand xmm13, xmm15
+			pand xmm13, xmm14
 			movdqu xmm3, xmm13
 			jmp .chequeoLosMayoresA255
 
 		.elNumeroEsMayorA255:
 			movdqu XMM13, [M255]
-			pshufb XMM15, [MASKPARACASOSPOSITIVOS]
 			pand xmm13, xmm15
 			movdqu xmm4, xmm13
 			jmp .juntoDatosYVuelvo
@@ -438,9 +432,6 @@ ldr_asm:
 			je .rojos
 			cmp r15,3
 			je .juntoTodo
-
-
-
 
 
 	.fin:
