@@ -52,66 +52,55 @@ tiles_asm:
 	add rdi, r12 ; el puntero apunta a la columna del cuadro a replicar 
 	add rdi, r12
 	add rdi, r12
-	mov R13d, tamx 
-	mov ax, r13w ; ax parte baja de tamx	
-	mov edx, tamx
-	shr edx, 16				;DX = parte alta de tamx
-	mov r13w, 15	;R13W = 15
-	div r13w				;AX = tamx/15 , DX = resto
 	xor r12, r12
-	mov r12w, dx		; r12w = resto tamx/15
-	xor r13, r13
-	mov r13w, ax ; r13 = tamx/5	
-	mov ax, r9w		;aX = parte baja de dst_row_size
-	mov edx, r9d
-	shr edx, 16				;DX = parte alta de dst_row_size
-	xor r11, r11
-	mov r11w, 15	;R13W = 15
-	div r11w				;AX = dst_row_size/15 , DX = resto
-	xor r15, r15
-	mov r15w, ax ; r15w = dst_row_size/15
+	mov r12d, tamx
+	add r12d, tamx
+	add r12d, tamx
 	xor r11, r11
 	mov r11, rdi ; r11d para volver alprincipio del cuadro
 	mov r10d, tamy ; en r10 esta la cantidad de columnas del cuadro
-
+	xor eax, eax
+	mov eax, r8d ; eax le pongo el tamaño de linea de surce
 .ciclo_por_linea_dst:
-		xor rcx, rcx
-		mov cx, r13w ; cantidad de veces a ciclar una linea del cuadro a replicar
+		xor r13, r13
+		mov r13d, r12d ; cantidad de veces a ciclar una linea del cuadro a replicar
 .ciclo_linea_cuadro:
 			movdqu xmm0, [rdi]		;levanto 5 pixels de fuente
 			movdqu [rsi], xmm0		;los copio a destino
 			add rsi, 15
 			add rdi, 15 ; adelanto punteros
-			dec ax
-			cmp word ax, 0
-			je .terminaLineaDst
-			loop .ciclo_linea_cuadro
-			cmp word r12w, 0			;quedan pixels desalineados?
-			je .noquedanDesalineados
-			movdqu xmm0, [rdi]
-			movdqu [rsi], xmm0
-			add rsi, r12 ; adelanto el puntero solo lo que llene
-			add dx, r12w ; le agrego el resto al resto de la linea de dst
-			jmp .noquedanDesalineados
-
+			sub r13d, 15
+			sub eax, 15
+			cmp eax, 15
+			jb .terminaLineaDst
+			cmp dword r13d, 15
+			jg .ciclo_linea_cuadro
+	cmp r13d, 0
+	je .noquedanDesalineados
+	movdqu xmm0, [rdi]
+	movdqu [rsi], xmm0
+	add rsi, r13 ; adelanto el puntero solo lo que me sobra 
+	sub eax, r13d
+	jmp .noquedanDesalineados
+	
 .terminaLineaDst:
-		cmp word dx, 15 ; quedan mas de 15 desalineados?
-		jge .aumentarAX
-		cmp word dx, 0 ; quedan desalineados?
-		je .finLineaDst 
+		cmp eax, 0
+		je .finLineaDst
+		cmp eax, r13d
+		jg .unaMas
+.seguimos:		
 		movdqu xmm0, [rdi]
 		movdqu [rsi], xmm0
-		add rsi, rdx
+		add rsi, rax
+		xor rax, rax
 		jmp .finLineaDst
-.aumentarAX:
-	mov r9d, edx
-	mov ax, dx		;aX = parte baja de dst_row_size
-	mov edx, r9d 
-	shr edx, 16				;dx = parte alta de dst_row_size
-	xor r9, r9
-	mov r9w, 15	;R13W = 15
-	div r9w				;AX = dst_row_size/15 , DX = resto
-	jmp .ciclo_por_linea_dst
+.unaMas:
+	movdqu xmm0, [rdi]
+	movdqu [rsi], xmm0
+	add rsi, r13
+	sub eax, r13d
+	mov rdi, r14 ; pongo el puntero de nuevo en el principio de linea del cuadro
+	jmp .seguimos		
 		
 .noquedanDesalineados:
 		mov rdi, r14 ; pongo el puntero de nuevo en el principio de linea del cuadro
@@ -119,13 +108,13 @@ tiles_asm:
 .finLineaDst:
 		mov rdi, r14 ; pongo el puntero al principio del cuadro
 		add rdi, r8 ; paso a la prox linea del cuadro
-		;mov rdi, rsi
-		mov r14, rdi ; actualizo principioo de nueva linea
+		mov r14, rdi ; actualizo principio de nueva linea
 		dec r10d
 		cmp r10d, 0
 		je .finCuadro
-.sigue:		
-		add eax, r15d 
+.sigue:	
+		xor rax, rax
+		add eax, r8d 
 		dec rbx  ; decremento cantidad de columnas
 		jnz .ciclo_por_linea_dst		
 		jmp .fin
