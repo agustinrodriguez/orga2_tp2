@@ -159,24 +159,24 @@ ldr_asm:
 			
 			.dividirPorMax:
 
-				movdqu xmm11, [MASK_MAX]
-				cvtdq2pd xmm11,xmm11
-				CVTPS2PD XMM1, XMM1
-				divpd xmm1,XMM11 
-				CVTPD2DQ xmm1,xmm1
-				PACKUSDW xmm1, xmm1
-			
+				movdqu XMM11, [MASK_MAX]
+				cvtdq2pd XMM11,XMM11 ; de dword a double
+				cvtps2pd XMM1, XMM1 ; de float a double
+				divpd XMM1, XMM11 ; divido por max
+				cvttpd2dq XMM1,XMM1 ; de double a dword truncado
+				packusdw XMM1, XMM1 ; de dword a word
+
 				;GREEN
-				CVTPS2PD XMM5, XMM5
+				cvtps2pd XMM5, XMM5
 				divpd xmm5,XMM11 
-				CVTPD2DQ xmm5,xmm5
-				PACKUSDW xmm5, xmm5
+				cvttpd2dq xmm5,xmm5
+				packusdw xmm5, xmm5
 
 				;rojo
-				CVTPS2PD XMM7, XMM7
+				cvtps2pd XMM7, XMM7
 				divpd xmm7,XMM11 
-				CVTPD2DQ xmm7,xmm7
-				PACKUSDW xmm7, xmm7
+				cvttpd2dq xmm7,xmm7
+				packusdw xmm7, xmm7
 
 
 				movdqu xmm9, xmm1
