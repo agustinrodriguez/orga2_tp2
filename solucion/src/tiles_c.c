@@ -26,14 +26,14 @@ void tiles_c    (
 			*p_d = *p_s;
 
 			c++;
-			if (c > (tamx + offsetx)) {
+			if (c >= (tamx + offsetx)) {
 				c = offsetx;
 			}
 		}
 		c = offsetx;
 
 		f++;
-		if (f > (tamy + offsety)) {
+		if (f >= (tamy + offsety)) {
 			f = offsety;
 		}
 	}

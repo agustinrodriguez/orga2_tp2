@@ -125,8 +125,8 @@ push RBP
 		divps XMM1, xmm10
 		divps XMM2, xmm10
 
-		CVTPS2DQ xmm1,xmm1
-		CVTPS2DQ xmm2, xmm2
+		CVTTPS2DQ xmm1,xmm1
+		CVTTPS2DQ xmm2, xmm2
 		PACKUSDW xmm1, xmm2
 
 ; fin de division paso el resultado ya obtenido en word a xmm0

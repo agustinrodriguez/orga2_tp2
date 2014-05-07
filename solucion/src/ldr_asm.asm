@@ -40,8 +40,12 @@ ldr_asm:
 	push R12
 	push R13
 	push R14
+	push R15
 
-	; [RSP + 48] = alfa
+	; [RSP + 56] = alfa
+
+	mov R10, RDX
+	mov R11, RCX
 
 	mov R12D, 0 ; R12D = 0 contador de filas
 	mov R13D, 0 ; R13D = 0 contador de columnas
@@ -49,11 +53,11 @@ ldr_asm:
 	mov EBX, 0 ; EBX = contador de bytes recorridos en fila
 
 	.recorrido_fila:
-		cmp R13D, ECX ; si recorrio todas las columnas
+		cmp R13D, R11D ; R11D = cols) si recorrio todas las columnas
 		je .fin
 
 	.recorrido_columna:
-		cmp R12D, EDX ; si recorrio toda la columna
+		cmp R12D, R10D ; si recorrio toda la columna
 		je .siguiente_columna
 
 		; me fijo si es borde o interior
@@ -63,11 +67,11 @@ ldr_asm:
 		jl .es_borde
 		mov EAX, R12D ; EAX = contador de filas
 		add EAX, 2
-		cmp EAX, EDX ; (i + 2) >= filas
+		cmp EAX, R10D ; (i + 2) >= filas
 		jge .es_borde
 		mov EAX, R13D ; EAX = contador de cols
 		add EAX, 2
-		cmp EAX, ECX
+		cmp EAX, R11D
 		jge .es_borde
 
 		; es interior
@@ -87,8 +91,6 @@ ldr_asm:
 			add EAX, R8D ; RAX = RAX + R8D + R8D
 			movdqu XMM5, [RDI + RAX - 6] ; +2
 
-			; ACA VA LO DE GUIDO
-	
 			movdqu xmm6, xmm3 ; es el mismo solo q lo salvo para poder usar los colores de los pixel por separado en el final
 				
 		;sumo los colores de cada pixel
@@ -146,7 +148,7 @@ ldr_asm:
 				;convierto a dw y a float para division
 				; voy a multiplicar ahora por alfa
 				;convierto a float para multiplicar
-				movdqu xmm15, [RSP + 48]
+				movdqu xmm15, [RSP + 56]
 				pshufb xmm15, [MALFA] 
 				;suponiendo que ya tengo el alfa
 				;chequear si queda en dword, segun especificacion de clase va a los cuatro pack de dword sino es convertirlo y listo
@@ -429,6 +431,7 @@ ldr_asm:
 
 
 	.fin:
+	pop R15
 	pop R14
 	pop R13
 	pop R12
