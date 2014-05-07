@@ -27,8 +27,8 @@ section .text
 ;void ldr_asm    (
 	;unsigned char *src, RDI
 	;unsigned char *dst, RSI
-	;int filas, RDX
-	;int cols, RCX
+	;int cols, RDX
+	;int filas, RCX
 	;int src_row_size, R8
 	;int dst_row_size R9
 	;int alfa) [RSP + 8]
@@ -44,20 +44,17 @@ ldr_asm:
 
 	; [RSP + 56] = alfa
 
-	mov R10, RDX
-	mov R11, RCX
-
 	mov R12D, 0 ; R12D = 0 contador de filas
 	mov R13D, 0 ; R13D = 0 contador de columnas
 	mov R14D, 0 ; R14 es el offset de acceso a la imagen
 	mov EBX, 0 ; EBX = contador de bytes recorridos en fila
 
 	.recorrido_fila:
-		cmp R13D, R11D ; R11D = cols) si recorrio todas las columnas
+		cmp R13D, EDX ; EDX = cols) si recorrio todas las columnas
 		je .fin
 
 	.recorrido_columna:
-		cmp R12D, R10D ; si recorrio toda la columna
+		cmp R12D, ECX ; si recorrio todas las filas (en una columna)
 		je .siguiente_columna
 
 		; me fijo si es borde o interior
@@ -67,11 +64,11 @@ ldr_asm:
 		jl .es_borde
 		mov EAX, R12D ; EAX = contador de filas
 		add EAX, 2
-		cmp EAX, R10D ; (i + 2) >= filas
+		cmp EAX, ECX ; (i + 2) >= filas
 		jge .es_borde
 		mov EAX, R13D ; EAX = contador de cols
 		add EAX, 2
-		cmp EAX, R11D
+		cmp EAX, EDX
 		jge .es_borde
 
 		; es interior
@@ -237,7 +234,9 @@ ldr_asm:
 				xor RAX, RAX
 				mov EAX, EBX
 				add EAX, R14D
-				movdqu [RSI + RAX], XMM0 ; pixels centrales
+				xor R15, R15
+				movd R15D, XMM0
+				mov [RSI + RAX], R15D ; pixels centrales
 				jmp .seguir
 
 		.es_borde: ; copio la misma imagen
@@ -245,7 +244,7 @@ ldr_asm:
 			mov EAX, EBX
 			add EAX, R14D
 			mov R15, [RDI + RAX]
-			mov [RSI + RAX], R15
+			mov [RSI + RAX], R15D
 
 		.seguir:
 		add R12D, 1
