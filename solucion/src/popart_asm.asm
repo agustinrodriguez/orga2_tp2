@@ -51,14 +51,25 @@ popart_asm:
 	mov EAX, 3
 	mul R10D
 	mov R10D, EAX ; R10D = cols * 3
+	mov r15d, r10d
 	mov EAX, R12D
 	mul R10D
 	mov R10D, EAX ; R10 = filas * cols * 3
+	;xor r15,r15
+	;mov R15D, R13D ; R10D = cols
+	mov r14d, r15d
+	mov r11, rdi
+	mov r13, rsi
+
 
 	.ciclo:
 		cmp R10D, 0 ; si recorri todos los bytes
 		jle .fin
+		cmp r15d, 15
+		jl .llegueAlFinalDeLaLinea
 		movdqu XMM0, [RDI] ; XMM0(B) = |b0|g0|r0|b1|g1|r1|b2|g2|r2|b3|g3|r3|b4|g4|r4|b|
+
+	.arranco:
 
 		movdqu XMM1, XMM0 ; XMM1 = XMM0
 		movdqu XMM2, XMM0 ; XMM2 = XMM0
@@ -91,14 +102,37 @@ popart_asm:
 
 		jmp .chequeo
 
+
+	.llegueAlFinalDeLaLinea:
+		xor r12, r12
+		mov r12d, r15d
+		;sub r12, 1
+		movdqu xmm0, [RDI - pixels_por_ciclo + r12]
+		jmp .arranco
+	.terminoBorde:
+		movdqu [RSI- pixels_por_ciclo + r12], XMM0
+		add r11, r8
+		add r13, r8
+		mov RDI, r11
+		mov r11, rdi
+		mov RSI, r13
+		mov r13, rsi
+		sub R10D, r15d
+		mov r15d, r14d
+		jmp .ciclo
+
+
 	.sigo:
 		por XMM1, XMM2
 		por XMM1, XMM3
 		por XMM1, XMM4
 		por XMM1, XMM5
 		movdqu XMM0, XMM1
+		cmp r15d, 15
+		jl .terminoBorde
 		;pshufb XMM0, [MASK_FIN] no se si hay q guardarlo al reves o no
 		movdqu [RSI], XMM0
+		sub r15d, pixels_por_ciclo
 		add RDI, pixels_por_ciclo
 		add RSI, pixels_por_ciclo
 		sub R10D, pixels_por_ciclo

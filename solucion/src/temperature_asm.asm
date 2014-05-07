@@ -78,15 +78,25 @@ push RBP
 	mov EAX, 3
 	mul R10D
 	mov R10D, EAX ; R10D = cols * 3
+	mov r15d, r10d
 	mov EAX, R12D
 	mul R10D
 	mov R10D, EAX ; R10 = filas * cols * 3
+	;xor r15,r15
+	;mov R15D, R13D ; R10D = cols
+	mov r14d, r15d
+	mov r11, rdi
+	mov r13, rsi
 
 	.ciclo:
 		cmp R10D, 0 ; si recorri todos los bytes
 		jle .fin
+		cmp r15d, 15
+		jl .llegueAlFinalDeLaLinea
 		movdqu XMM0, [RDI] ; xmm0(B) = | b | g | r | b | g | r | b | g | r | b | g | r | b | g | r | b |
 
+	.arranco:
+		
 		movdqu XMM1, XMM0 ; XMM1 = XMM0
 		movdqu xmm2,xmm0
 		
@@ -379,6 +389,25 @@ push RBP
 		movdqu xmm5, xmm13
 		jmp .sigoCon4
 
+	.llegueAlFinalDeLaLinea:
+		xor r12, r12
+		mov r12d, r15d
+		;sub r12, 1
+		movdqu xmm0, [RDI - pixels_por_ciclo + r12]
+		jmp .arranco
+	.terminoBorde:
+		movdqu [RSI- pixels_por_ciclo + r12], XMM0
+		add r11, r8
+		add r13, r8
+		mov RDI, r11
+		mov r11, rdi
+		mov RSI, r13
+		mov r13, rsi
+		sub R10D, r15d
+		mov r15d, r14d
+		jmp .ciclo
+
+
 
 	.sigo:
 	;junto todo en un or
@@ -389,7 +418,10 @@ push RBP
 		movdqu xmm0, xmm1
 		;invierto rgb a bgr
 		pshufb xmm0, [MASK_FIN]
+		cmp r15d, 15
+		jl .terminoBorde
 		movdqu [RSI], XMM0
+		sub r15d, pixels_por_ciclo
 		add RDI, pixels_por_ciclo
 		add RSI, pixels_por_ciclo
 		sub R10D, pixels_por_ciclo
