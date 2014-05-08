@@ -43,6 +43,7 @@ typedef struct configuracion_t
 	bool verbose;
 	bool frames;
 	bool nombre;
+	int cant_iteraciones;
 } configuracion_t;
 
 #define SWITCH_C_ASM(config,c_ver,asm_ver) ( config->tipo_filtro == FILTRO_C ? c_ver : asm_ver )

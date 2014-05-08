@@ -75,7 +75,13 @@ void correr_filtro_imagen(configuracion_t *config, aplicador_fn_t aplicador)
 	else
 	{
 		opencv_abrir_imagenes(config);
+
+		unsigned long long int start, end;
+		MEDIR_TIEMPO_START(start)
 		aplicador(config);
+		MEDIR_TIEMPO_STOP(end);
+		imprimir_tiempos_ejecucion(start, end, config->cant_iteraciones);
+
 		opencv_liberar_imagenes(config);
 	}
 }
