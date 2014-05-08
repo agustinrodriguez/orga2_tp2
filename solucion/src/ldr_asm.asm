@@ -145,8 +145,14 @@ ldr_asm:
 				;convierto a dw y a float para division
 				; voy a multiplicar ahora por alfa
 				;convierto a float para multiplicar
-				movdqu xmm15, [RSP + 56]
-				pshufb xmm15, [MALFA] 
+				xor R15, R15
+				mov R15D, [RSP + 56]
+				xorpd XMM15, XMM15
+				movd XMM15, R15D
+
+				;movdqu xmm15, [RSP + 56]
+				;pshufb xmm15, [MALFA] 
+
 				;suponiendo que ya tengo el alfa
 				;chequear si queda en dword, segun especificacion de clase va a los cuatro pack de dword sino es convertirlo y listo
 				;yo no lo puedo chequear ya que en mi rsp+48 me da un numero q entra en qword recien
@@ -161,22 +167,22 @@ ldr_asm:
 
 				movdqu XMM11, [MASK_MAX]
 				cvtdq2pd XMM11,XMM11 ; de dword a double
-				cvtps2pd XMM1, XMM1 ; de float a double
+				; cvtps2pd XMM1, XMM1 ; de float a double
 				divpd XMM1, XMM11 ; divido por max
 				cvttpd2dq XMM1,XMM1 ; de double a dword truncado
-				packusdw XMM1, XMM1 ; de dword a word
+				packssdw XMM1, XMM1 ; de dword a word
 
 				;GREEN
-				cvtps2pd XMM5, XMM5
+				; cvtps2pd XMM5, XMM5
 				divpd xmm5,XMM11 
 				cvttpd2dq xmm5,xmm5
-				packusdw xmm5, xmm5
+				packssdw xmm5, xmm5
 
 				;rojo
-				cvtps2pd XMM7, XMM7
+				; cvtps2pd XMM7, XMM7
 				divpd xmm7,XMM11 
 				cvttpd2dq xmm7,xmm7
-				packusdw xmm7, xmm7
+				packssdw xmm7, xmm7
 
 
 				movdqu xmm9, xmm1
@@ -296,12 +302,12 @@ ldr_asm:
 		movdqu xmm7, xmm3
 		XORPD xmm9, xmm9
 		punpcklwd xmm7, xmm9
-		cvtdq2ps xmm7, xmm7
-		cvtdq2ps xmm15, xmm15
+		cvtdq2pd xmm7, xmm7
+		cvtdq2pd xmm15, xmm15
 
-		mulps XMM7, xmm15
+		mulpd XMM7, xmm15
 		
-		CVTPS2DQ xmm7,xmm7
+		CVTPD2DQ xmm7,xmm7
 		movdqu xmm3, xmm7
 		jmp .continuamos
 
@@ -309,7 +315,7 @@ ldr_asm:
 			movdqu XMM7, XMM0 ; XMM1 = XMM0
 			movdqu XMM8, XMM0 ; XMM2 = XMM0
 			
-			cvtdq2ps xmm3, xmm3
+			cvtdq2pd xmm3, xmm3
 
 			XORPD XMM9, XMM9 ; XMM7 = 0
 			;multiplico blue 
@@ -321,9 +327,9 @@ ldr_asm:
 			movdqu xmm13, XMM10
 			XORPD xmm9, xmm9
 			punpcklwd xmm13, xmm9
-			cvtdq2ps xmm13, xmm13
+			cvtdq2pd xmm13, xmm13
 					
-			mulps xmm13, xmm3
+			mulpd xmm13, xmm3
 			movdqu XMM1, XMM13
 
 			;multiplico verde
@@ -335,9 +341,9 @@ ldr_asm:
 			movdqu xmm13, XMM11
 			XORPD xmm9, xmm9 
 			punpcklwd xmm13, xmm9
-			cvtdq2ps xmm13, xmm13
+			cvtdq2pd xmm13, xmm13
 
-			mulps xmm13, xmm3
+			mulpd xmm13, xmm3
 
 			movdqu XMM5, XMM13
 
@@ -349,8 +355,8 @@ ldr_asm:
 
 			XORPD xmm9, xmm9
 			punpcklwd xmm13, xmm9
-			cvtdq2ps xmm13, xmm13
-			mulps xmm13, xmm3
+			cvtdq2pd xmm13, xmm13
+			mulpd xmm13, xmm3
 			movdqu XMM7, XMM13
 			jmp .dividirPorMax
 

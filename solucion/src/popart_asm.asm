@@ -29,8 +29,8 @@ section .data
 section .text
 ;void tiles_asm(unsigned char *src, RDI
 ;              unsigned char *dst, RSI
-;              int filas, RDX
-;              int cols, RCX
+;              int cols, RDX
+;              int filas, RCX
 ;              int src_row_size, R8
 ;              int dst_row_size ); R9
 
@@ -40,8 +40,8 @@ popart_asm:
 	push R12
 	push R13
 
-	mov R12, RDX ; R12 = RDX = filas
-	mov R13, RCX ; R13 = RCX = cols
+	mov R12, RCX ; R12 = RCX = filas
+	mov R13, RDX ; R13 = RDX = cols
 
 	xor R10, R10 ; R10 = 0
 

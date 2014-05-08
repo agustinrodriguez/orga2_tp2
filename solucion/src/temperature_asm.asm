@@ -54,21 +54,21 @@ MASK_FIN: DB 0x02,0x01,0x00,0x05,0x04,0x03,0x08,0x07,0x06,0x0B,0x0A,0x09,0x0E,0x
 section .data
 
 section .text
-;void temperature_asm(unsigned char *src,
-;              unsigned char *dst,
-;              int filas,
-;              int cols,
-;              int src_row_size,
-;              int dst_row_size);
+;void temperature_asm(unsigned char *src, RDI
+;              unsigned char *dst, RSI
+;              int cols, RDX
+;              int filas, RCX
+;              int src_row_size, R8
+;              int dst_row_size); R9
 
 temperature_asm:
-push RBP
+	push RBP
 	mov RBP, RSP
 	push R12
 	push R13
 
-	mov R12, RDX ; R12 = RDX = filas
-	mov R13, RCX ; R13 = RCX = cols
+	mov R12, RCX ; R13 = RCX = filas
+	mov R13, RDX ; R12 = RDX = cols
 
 	xor R10, R10 ; R10 = 0
 
